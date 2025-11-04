@@ -1,357 +1,163 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ลงทะเบียน</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- 1. โหลด TailwindCSS และ Font ไทย (IBM Plex Sans Thai) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- 2. โหลด SweetAlert2 -->
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    /* ตั้งค่า Font หลักให้เป็น IBM Plex Sans Thai */
+    body {
+      font-family: 'IBM Plex Sans Thai', sans-serif;
+    }
+  </style>
 </head>
 
-<body class="bg-slate-100 min-h-screen">
-    <div class="max-w-md m-auto p-2">
-        <form>
-            <div class="bg-white rounded-lg p-10">
-                <div class="mb-5 text-center">
-                    <div class="mx-auto w-32 h-32 mb-2 border rounded-lg relative bg-slate-100 mb-4 shadow-inset">
-                        <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" alt="Default Image" id="preview" class="h-32 w-32 object-cover rounded-lg">
-                    </div>
-                    <label for="file" class="cursor-pointer inline-flex justify-between items-center p-2 rounded-lg text-slate-800 bg-slate-100 hover:bg-slate-300">
-                        อัพโหลดรูป
-                        <input type="file" id="file" name="file" accept="image/*" class="hidden">
-                    </label>
-                    <div class="mx-auto w-48 text-slate-500 text-xs text-center mt-1">คลิกเพื่ออัพโหลดรูปของคุณ</div>
-                </div>
-                <div class="flex flex-col">
-                    <div class="mb-4">
-                        <input type="text" class="input-field w-full  bg-slate-200 p-2 text-slate-500 text-sm text-center rounded-lg" id="userlineId" placeholder="lineId" name="userlineId">
-                    </div>
-                    <div class="mb-4">
-                        <input type="text" class="input-field w-full border border-slate-300 p-2 text-md rounded-lg" id="nameId" placeholder="ชื่อ-สกุล" name="nameId" required>
-                    </div>
-                    <div class="mb-4">
-                        <input type="text" class="input-field w-full border border-slate-300 p-2 text-md rounded-lg" id="keynumberId" placeholder="รหัสพนักงาน" name="keynumberId" required>
-                    </div>
-                    <div class="mb-6">
-                        <input type="text" class="input-field w-full border border-slate-300 p-2 text-md rounded-lg" id="keynumber2Id" placeholder="ตำแหน่ง" name="keynumber2Id" required>
-                    </div>
-                </div>
-                <button type="button" id="submitBtn" class="bg-slate-800 text-center w-full text-white py-4 px-4 rounded-lg hover:bg-blue-700">บันทึกข้อมูล</button>
-            </div>
-        </form>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+  <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-6 md:p-8 text-center">
+    <!--  -->
+    <h1 class="text-2xl font-bold text-blue-700 mb-2">LIFF User ID </h1>
+    <p class="text-gray-600 mb-6">ดึงและบันทึก Line User ID ลง Google Sheet</p>
+
+    <!-- สถานะการเชื่อมต่อ LIFF และผลลัพธ์ -->
+    <div id="statusBox" class="p-4 rounded-lg border-2 border-dashed border-gray-300 transition duration-300">
+      <div id="liffStatus" class="text-yellow-600 font-semibold">
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-yellow-600 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        กำลังเชื่อมต่อ Line...
+      </div>
+      <div id="userDataDisplay" class="mt-4 text-left text-sm hidden">
+          <p class="text-gray-700">ชื่อผู้ใช้: <span id="displayName" class="font-medium text-gray-900"></span></p>
+          <p class="text-gray-700 break-all">User ID: <span id="userId" class="font-mono text-xs text-green-700"></span></p>
+      </div>
     </div>
-    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
-    <script>
-        // ลิ้งจาก ระบบสมาชิก
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxoI1yMx8h9zpkqsRUDwQV5-MxwemtXYKDxZAtOV8czSmdfsqnpEK4cCW4adkgV0AxaBw/exec';
-        // Liff ไอดีไล์เรียกใช้หน้าข้อมูลส่วนตัว
-        const LIFF_ID = '1657790891-RXYxADO1'; // LIFF ID
 
+    <!-- ปุ่มบันทึกข้อมูล (ซ่อนไว้จนกว่า LIFF จะพร้อม) -->
+    <button id="saveButton" disabled
+            class="mt-6 w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg
+                   shadow-md shadow-blue-300/50 hover:bg-blue-600 transition-all duration-300 
+                   disabled:opacity-50 disabled:cursor-not-allowed">
+        บันทึกข้อมูล
+    </button>
+  </div>
 
-        // ฟังก์ชันเริ่มต้น LIFF SDK
-        window.onload = function() {
-            initializeLiff();
-        };
+  <!-- 3. โหลด LIFF SDK (ไว้ท้ายสุดก่อน <script> หลัก) -->
+  <script src="https://static.line-scdn.net/liff/2.22.2/sdk.js"></script>
+  
+  <script>
+    // *** ต้องเปลี่ยนค่านี้: แทนที่ด้วย LIFF ID ที่คุณได้รับ ***
+    const CONFIG = {
+        LIFF_ID: '1657790891-40VQpd6O' 
+    };
+    // ******************************************************
 
-        // ฟังก์ชันสำหรับเริ่มต้น LIFF SDK
-        async function initializeLiff() {
-            await liff.init({
-                liffId: `${LIFF_ID}`
+    const statusBox = document.getElementById('statusBox');
+    const liffStatus = document.getElementById('liffStatus');
+    const userDataDisplay = document.getElementById('userDataDisplay');
+    const saveButton = document.getElementById('saveButton');
+    let currentUserData = null; // เก็บข้อมูลผู้ใช้ชั่วคราว
+
+    /**
+     * LIFF Initialization and Profile Retrieval
+     */
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: CONFIG.LIFF_ID });
+        
+        if (!liff.isLoggedIn()) {          
+          liff.login(); // บังคับให้ผู้ใช้เข้าสู่ระบบ
+        } else {
+          const profile = await liff.getProfile();
+          
+          currentUserData = {
+              userId: profile.userId,
+              displayName: profile.displayName
+          };
+          
+          // อัปเดต UI ด้วยข้อมูลที่ดึงมา
+          document.getElementById('displayName').textContent = profile.displayName;
+          document.getElementById('userId').textContent = profile.userId;
+          
+          userDataDisplay.classList.remove('hidden');
+          
+          saveButton.disabled = false; // เปิดใช้งานปุ่มบันทึก
+        }
+      } catch (err) {
+        console.error("LIFF init error:", err);
+        
+      }
+    }
+    
+    // เริ่มต้น LIFF เมื่อหน้าเว็บโหลดเสร็จ
+    window.onload = initLiff;
+
+    // Event Listener สำหรับปุ่มบันทึก
+    saveButton.addEventListener('click', function() {
+        if (!currentUserData) {
+            Swal.fire({
+                icon: 'error',
+                title: 'ข้อผิดพลาด',
+                text: 'ไม่สามารถดึงข้อมูล Line User ID ได้ กรุณาลองโหลดหน้านี้อีกครั้ง',
             });
-
-            if (liff.isLoggedIn()) {
-                getUserProfile();
-            } else {
-                liff.login();
-            }
+            return;
         }
 
-        // ฟังก์ชันสำหรับดึงข้อมูลโปรไฟล์ของผู้ใช้
-        async function getUserProfile() {
-            try {
-                const profile = await liff.getProfile();
-                document.getElementById('userlineId').value = profile.userId;
-            } catch (error) {
-                console.error('เกิดข้อผิดพลาดในการดึงข้อมูลโปรไฟล์:', error);
-            }
-        }
-
-        // ฟังก์ชันสำหรับส่งข้อความ Flex
-        async function sendFlexMessage() {
-            const flexMessage = {
-                type: 'flex',
-                altText: 'ลงทะเบียนเรียบร้อย',
-                contents: {
-                    type: 'bubble',
-                    styles: {
-                        header: {
-                            backgroundColor: '#f0f0f0'
-                        },
-                        footer: {
-                            backgroundColor: '#f0f0f0'
-                        },
-                        body: {
-                            backgroundColor: '#ffffff'
-                        }
-                    },
-                    header: {
-                        type: 'box',
-                        layout: 'vertical',
-                        contents: [{
-                            type: 'text',
-                            text: 'ข้อมูลลงทะเบียนสำเร็จ',
-                            weight: 'bold',
-                            size: 'lg',
-                            color: '#000000',
-                            align: 'center'
-                        }]
-                    },
-                    body: {
-                        type: 'box',
-                        layout: 'vertical',
-                        contents: [{
-                            type: 'box',
-                            layout: 'vertical',
-                            margin: 'lg',
-                            spacing: 'sm',
-                            contents: [{
-                                type: 'box',
-                                layout: 'horizontal',
-                                contents: [{
-                                    type: 'text',
-                                    text: 'ชื่อ-สกุล',
-                                    size: 'sm',
-                                    color: '#555555',
-                                    flex: 1
-                                }, {
-                                    type: 'text',
-                                    text: document.getElementById('nameId').value,
-                                    size: 'sm',
-                                    color: '#111111',
-                                    align: 'end',
-                                    flex: 2
-                                }]
-                            }, {
-                                type: 'box',
-                                layout: 'horizontal',
-                                contents: [{
-                                    type: 'text',
-                                    text: 'รหัสพนักงาน',
-                                    size: 'sm',
-                                    color: '#555555',
-                                    flex: 1
-                                }, {
-                                    type: 'text',
-                                    text: document.getElementById('keynumberId').value,
-                                    size: 'sm',
-                                    color: '#111111',
-                                    align: 'end',
-                                    flex: 2
-                                }]
-                            }, {
-                                type: 'box',
-                                layout: 'horizontal',
-                                contents: [{
-                                    type: 'text',
-                                    text: 'อีเมล',
-                                    size: 'sm',
-                                    color: '#555555',
-                                    flex: 1
-                                }, {
-                                    type: 'text',
-                                    text: document.getElementById('keynumber2Id').value,
-                                    size: 'sm',
-                                    color: '#111111',
-                                    align: 'end',
-                                    flex: 2
-                                }]
-                            }]
-                        }]
-                    },
-                    footer: {
-                        type: 'box',
-                        layout: 'vertical',
-                        contents: [{
-                            type: 'text',
-                            text: 'ยินดีต้อนรับ!',
-                            size: 'sm',
-                            color: '#aaaaaa',
-                            align: 'center'
-                        }]
-                    }
-                }
-            };
-
-            await liff.sendMessages([flexMessage]);
-        }
-
-        let url = `${WEB_APP_URL}`;
-        let fileInput = document.getElementById("file");
-        let imgPreview = document.getElementById("preview");
-        let userlineIdInput = document.getElementById("userlineId");
-        let nameIdInput = document.getElementById("nameId");
-        let keynumberIdInput = document.getElementById("keynumberId");
-        let keynumber2IdInput = document.getElementById("keynumber2Id");
-        let submitBtn = document.getElementById("submitBtn");
-
-        // ฟังก์ชันสำหรับแปลงไฟล์เป็น Base64
-        function getBase64(file) {
-            return new Promise((resolve, reject) => {
-                let reader = new FileReader();
-                reader.onload = () => resolve(reader.result.split(',')[1]);
-                reader.onerror = error => reject(error);
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // ฟังก์ชันสำหรับแสดงภาพตัวอย่าง
-        function previewImage() {
-            if (fileInput.files.length > 0) {
-                let file = fileInput.files[0];
-                let reader = new FileReader();
-
-                reader.onload = function(e) {
-                    imgPreview.src = e.target.result;
-                };
-
-                reader.readAsDataURL(file);
-            } else {
-                imgPreview.src = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
-            }
-        }
-
-        // เพิ่ม event listener สำหรับการเปลี่ยนแปลงใน input file
-        fileInput.addEventListener('change', () => {
-            previewImage();
-        });
-
-        // ฟังก์ชันสำหรับตรวจสอบการกรอกข้อมูลในฟิลด์ที่จำเป็น
-        function validateForm() {
-            const userlineId = userlineIdInput.value.trim();
-            const nameId = nameIdInput.value.trim();
-            const keynumberId = keynumberIdInput.value.trim();
-            const keynumber2Id = keynumber2IdInput.value.trim();
-
-            if (userlineId === '' || nameId === '' || keynumberId === '' || keynumber2Id === '') {
-                return false;
-            }
-
-            return true;
-        }
-
-        // เพิ่ม event listener สำหรับปุ่มบันทึกข้อมูล
-        submitBtn.addEventListener('click', async(event) => {
-            event.preventDefault();
-
-            if (!validateForm()) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'กรุณากรอกข้อมูลในช่องที่จำเป็น.',
-                });
-                return;
-            }
-
-            const isConfirmed = await showConfirmationDialog();
-
-            if (isConfirmed) {
-                submitBtn.disabled = true;
-
-                try {
-                    let obj;
-
-                    if (fileInput.files.length > 0) {
-                        let file = fileInput.files[0];
-                        let base64 = await getBase64(file);
-                        imgPreview.src = `data:${file.type};base64,${base64}`;
-
-                        obj = {
-                            base64: base64,
-                            type: file.type,
-                            name: file.name,
-                            userlineId: userlineIdInput.value,
-                            nameId: nameIdInput.value,
-                            keynumberId: keynumberIdInput.value,
-                            keynumber2Id: keynumber2IdInput.value
-                        };
-                    } else {
-                        let response = await fetch("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png");
-                        let blob = await response.blob();
-                        let base64 = await getBase64(blob);
-
-                        obj = {
-                            base64: base64,
-                            type: "image/png",
-                            name: "Avatar.png",
-                            userlineId: userlineIdInput.value,
-                            nameId: nameIdInput.value,
-                            keynumberId: keynumberIdInput.value,
-                            keynumber2Id: keynumber2IdInput.value
-                        };
-                    }
-
-                    Swal.fire({
-                        title: '<div class="text-md">กำลังบันทึก, รอสักครู่...</div>',
-                        allowOutsideClick: false,
-                        showConfirmButton: false,
-                        html: '<div class="swal2-loading"></div>',
-                        onBeforeOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    let response = await fetch(url, {
-                        method: "POST",
-                        body: JSON.stringify(obj)
-                    });
-
-                    let data = await response.text();
-
-                    Swal.fire({
-                        title: 'สำเร็จ!',
-                        text: 'บันทึกข้อมูลของคุณเรียบร้อย!',
-                        icon: 'success',
-                        confirmButtonText: 'ปิด',
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            liff.closeWindow();
-                        }
-                    });
-                    sendFlexMessage();
-                    console.log(data);
-                } catch (error) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'เกิดข้อผิดพลาดขณะส่งข้อมูล.',
-                    });
-
-                    console.error(error);
-                } finally {
-                    submitBtn.disabled = false;
-                }
-            } else {
-                Swal.fire('Submission Canceled', 'ข้อมูลของคุณไม่ได้ถูกส่ง.', 'info');
+        // แสดง SweetAlert "กำลังโหลด"
+        Swal.fire({
+            title: 'กำลังบันทึกข้อมูล...',
+            text: 'กรุณารอสักครู่',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+                saveButton.disabled = true; // ปิดปุ่มระหว่างบันทึก
             }
         });
 
-        // ฟังก์ชันสำหรับแสดงกล่องยืนยัน
-        async function showConfirmationDialog() {
-            const confirmation = await Swal.fire({
-                title: 'ยืนยันการส่งข้อมูล',
-                text: 'แน่ใจ ว่าคุณกำลังส่งข้อมูล?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'ใช่, ส่งข้อมูล!',
-                cancelButtonText: 'ไม่, ยกเลิก'
-            });
+        // ส่งข้อมูลไปที่ Code.gs โดยใช้ google.script.run
+        google.script.run
+            .withSuccessHandler(onSuccess)
+            .withFailureHandler(onFailure)
+            .saveLineData(currentUserData);
+    });
 
-            return confirmation.isConfirmed;
-        }
-    </script>
+
+    /**
+     * ฟังก์ชันที่ถูกเรียกเมื่อการบันทึกสำเร็จ (จาก Code.gs)
+     */
+    function onSuccess(result) {
+      saveButton.disabled = false;
+      Swal.fire({
+        icon: 'success',
+        title: 'บันทึกข้อมูลสำเร็จ!',
+        text: result.message,
+      });
+      // ไม่ต้องล้างข้อมูลในฟอร์ม เพราะนี่คือข้อมูล User ที่ดึงมา
+    }
+
+    /**
+     * ฟังก์ชันที่ถูกเรียกเมื่อการบันทึกล้มเหลว
+     */
+    function onFailure(error) {
+      saveButton.disabled = false;
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: error.message || 'ไม่สามารถส่งข้อมูลได้ กรุณาตรวจสอบการตั้งค่า Apps Script',
+      });
+    }
+  </script>
+
 </body>
-
 </html>
+
