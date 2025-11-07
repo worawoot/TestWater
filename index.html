@@ -1,214 +1,251 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFF Data Form</title>
-    <!-- 1. โหลด Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* ใช้ Font ที่รองรับภาษาไทย */
-        body {
-            font-family: 'Inter', 'Noto Sans Thai', sans-serif;
-        }
-        /* ซ่อน Modal ไว้ตอนเริ่มต้น */
-        #message-modal {
-            transition: opacity 0.3s ease-in-out;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIFF to SHEET</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"
+    integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+  <style>
+    body {
+      font-family: Kanit, sans-serif;
+      background: rgb(252, 233, 233);
+      background: linear-gradient(0deg, rgba(252, 233, 233, 1) 0%, rgba(224, 244, 241, 1) 26%, rgba(255, 255, 255, 1) 71%);
+      -webkit-background-size: cover;
+      -moz-background-size: cover;
+      -o-background-size: cover;
+      background-size: cover;
+      background-color: skyblue;
+    }
+
+    .list {
+      background-color: #ffffff;
+      padding: 1.8em 1.2em;
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+      border-radius: 0.6em;
+    }
+
+    .qBox {
+      border: solid 2px #525150 !important;
+      padding: 1rem;
+      margin: 0 10px;
+      border-radius: 13px;
+      max-width: 100%;
+      margin: auto;
+    }
+
+    label {
+      color: black;
+    }
+
+    .container {
+      max-width: 600px;
+    }
+
+    button[type="submit"] {
+      font-family: Kanit, sans-serif;
+      box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      width: 100%;
+      margin: 0 auto;
+      margin-top: 10px;
+      padding: 3%;
+      background: #b26bc2;
+      border: none;
+      border-radius: 5px;
+      font-size: 17px;
+      border-top-style: none;
+      border-right-style: none;
+      border-left-style: none;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background: #FFCE00;
+      color: #000;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-    <!-- 2. หน้าฟอร์มหลัก -->
-    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">ลงทะเบียนข้อมูล</h1>
-        <p class="text-center text-gray-500 mb-6">กรุณากรอกข้อมูลเพิ่มเติมของคุณ</p>
-
-        <!-- ข้อมูลผู้ใช้ (จะถูกเติมโดย LIFF) -->
-        <div id="user-profile" class="mb-4 p-4 bg-gray-50 rounded-md text-center hidden">
-            <p class="text-gray-700">ลงชื่อเข้าใช้ในฐานะ:</p>
-            <p id="display-name" class="font-bold text-green-600"></p>
-        </div>
-        
-        <!-- ฟอร์มสำหรับกรอกข้อมูล -->
-        <form id="data-form">
-            <div class="mb-4">
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">อีเมล (Email)</label>
-                <input type="email" id="email" name="email" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                       placeholder="example@email.com">
-            </div>
-
-            <!-- ปุ่ม Submit -->
-            <button type="submit" id="submit-button"
-                    class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-md
-                           hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
-                           transition duration-300 disabled:opacity-50">
-                <span id="button-text">ส่งข้อมูล</span>
-                <span id="button-loading" class="hidden">กำลังบันทึก...</span>
-            </button>
-        </form>
+<body>
+  <center>
+    <br />
+    <img src="https://sv1.picz.in.th/images/2023/03/24/mWNBPW.gif"
+      style="width:200px; height:auto; padding-bottom: 10px; ">
+    <div class="form-group mb-2">
+      <label for="searchtext">
+        <h3>ระบบสมัครสมาชิก</h3>
+        <h5 class="text-center text-danger">สื่อ และนวัตกรรมครูสิทธิชาติ สิทธิ</h5>
+      </label>
     </div>
+  </center>
 
-    <!-- 3. Modal สำหรับแสดงข้อความ (แทน alert) -->
-    <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden opacity-0">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-            <h3 id="message-title" class="text-lg font-bold mb-4">ข้อความ</h3>
-            <p id="message-body" class="text-gray-700 mb-6"></p>
-            <button id="close-modal-button" class="w-full bg-gray-300 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-400">
-                ปิด
-            </button>
+  <div class="container list">
+    <form id="myForm" class="needs-validation my-4" novalidate>
+      <div class="row justify-content-start g-3">
+        <div class="col-12">
+          <label for="name">ชื่อ-สกุล</label>
+          <input type="text" id="name" name="name" class="form-control" placeholder="ชื่อ-สกุล" required>
+          <div class="invalid-feedback">
+            กรุณากรอกชื่อ-สกุล
+          </div>
         </div>
-    </div>
+        <div class="col-12">
+          <label for="phone">เบอร์โทร</label>
+          <input type="text" id="phone" name="phone" maxlength="10" class="form-control" placeholder="กรุณากรอกเบอร์โทร"
+            required>
+          <div class="invalid-feedback">
+            กรุณากรอกเบอร์โทร
+          </div>
+        </div>
+        <div class="col-12">
+          <label for="device">กำหนดชื่อเข้าใช้งาน (Username)</label>
+          <input type="text" id="device" name="device" class="form-control" placeholder="กรุณากรอก Username" required>
+          <div class="invalid-feedback">
+            กรุณาตั้ง Username ด้วยครับ
+          </div>
+        </div>
+        <div class="col-12">
+          <label for="problem">รหัสผ่าน (Password)</label>
+          <input type="text" id="problem" name="problem" class="form-control"
+            placeholder="ตัวแรกให้ขึ้นต้นด้วยตัวอักษรภาษาอังกฤษ" required>
+          <div class="invalid-feedback">
+            กรุณาตั้งรหัสผ่านด้วยครับ
+          </div>
+        </div>
+
+        <div class="col-12">
+          <label for="place">เวลาโอนเงิน</label>
+          <input type="time" id="place" name="place" class="form-control" required>
+          <!-- <input type="file" id="file" name="file" class="form-control" required> -->
+          <div class="invalid-feedback">
+            กรุณาอัพโหลดสลิปโอนเงิน
+          </div>
+        </div>
+
+        <!-- <div class="col-12">
+          <label for="place">อัพโหลดไฟล์</label>
+<input type="file" name="uploaded_file" id="uploaded_file">
+          <div class="invalid-feedback">
+            กรุณาอัพโหลดสลิปโอนเงิน
+          </div>
+        </div> -->
+
+        <div class="col-12 text-center">
+          <button type="submit" class="btn btn-warning w-100"><i class="bi bi-send-fill"></i>&nbsp;สมัครสมาชิก</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <script>
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwz14Yh0yt9btNcFPN_MqrAx5HTRSYbCPDYIHczZXpafGmR-TykHYIedGgGkz1cYwA0/exec'
+    var uid
+    $(document).ready(() => {
+      liff.init({
+        liffId: '1657790891-jb82nQBm',
+        withLoginOnExternalBrowser: true
+      })
+      liff.ready.then(() => {
+        console.log('liff ready')
+      })
+    })
+
+    function submit() {
+      $.LoadingOverlay('show')
+      let data = {
+        opt: 'savedata',
+        uid: liff.getDecodedIDToken().sub,
+        name: $('#name').val(),
+        phone: $('#phone').val(),
+        device: $('#device').val(),
+        problem: $('#problem').val(),
+        place: $('#place').val(),
+      }
 
 
-    <!-- 4. โหลด LIFF SDK -->
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
-    <!-- 5. JavaScript หลักของ LIFF -->
-    <script>
-        // --- [สำคัญ] กรุณากรอกข้อมูลของคุณ ---
-        const MY_LIFF_ID = '1657790891-jb82nQBm'; // <== ใส่ LIFF ID ของคุณที่ได้จาก LINE Developers
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx45OxfmUd2BR7kNxCmuWo9i0nwmP60eMjQh_vm_7SbhrBNk4gEVO6tbtTrNKHgyWJE/exec?code=hWQILtiojeSLzL04Te1L&state=mk4a0rRTJAa3&liffClientId=1657790891&liffRedirectUri=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbx45OxfmUd2BR7kNxCmuWo9i0nwmP60eMjQh_vm_7SbhrBNk4gEVO6tbtTrNKHgyWJE%2Fexec'; // <== ใส่ URL ที่ได้จากการ Deploy Apps Script
-        // ------------------------------------
-
-        // DOM Elements
-        const form = document.getElementById('data-form');
-        const submitButton = document.getElementById('submit-button');
-        const buttonText = document.getElementById('button-text');
-        const buttonLoading = document.getElementById('button-loading');
-        const userProfileDiv = document.getElementById('user-profile');
-        const displayNameP = document.getElementById('display-name');
-        
-        // Modal Elements
-        const modal = document.getElementById('message-modal');
-        const modalTitle = document.getElementById('message-title');
-        const modalBody = document.getElementById('message-body');
-        const closeModalButton = document.getElementById('close-modal-button');
-
-        /**
-         * แสดง Modal ข้อความ
-         */
-        function showMessage(title, body, isError = false) {
-            modalTitle.innerText = title;
-            modalBody.innerText = body;
-            modalTitle.className = `text-lg font-bold mb-4 ${isError ? 'text-red-600' : 'text-green-600'}`;
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+      $.ajax({
+        method: "POST",
+        url: scriptUrl,
+        data: data,
+        dataType: 'json',
+        success: function (res) {
+          $.LoadingOverlay('hide')
+          if (res.status == 'success') {
+            // reset the form
+            $('#myForm')[0].reset()
+            return Swal.fire({
+              icon: 'success',
+              title: 'บันทึกข้อมูลเรียบร้อย',
+              allowOutsideClick: false,
+              confirmButtonText: 'ตกลง'
+            })
+          }
+          return Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            allowOutsideClick: false,
+            confirmButtonText: 'ตกลง'
+          })
+        },
+        error: function (err) {
+          console.log(err)
+          $.LoadingOverlay('hide')
+          alert('บันทึกข้อมูลไม่สำเร็จ')
         }
+      });
+    }
 
-        /**
-         * ซ่อน Modal ข้อความ
-         */
-        function hideMessage() {
-            modal.classList.add('opacity-0');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
+  </script>
+  <script>
+    (() => {
+      'use strict'
 
-        /**
-         * ฟังก์ชันหลัก: เริ่มต้น LIFF
-         */
-        async function initializeLiff() {
-            try {
-                await liff.init({ liffId: MY_LIFF_ID });
-                
-                if (!liff.isLoggedIn()) {
-                    // ถ้ายังไม่ login ให้ login อัตโนมัติ
-                    // ใน LIFF browser, นี่จะขอ permission ถ้ายังไม่เคยขอ
-                    liff.login();
-                    return; // หยุดการทำงานชั่วคราว รอ redirect
-                }
+      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      const forms = document.querySelectorAll('.needs-validation')
 
-                // ถ้า login แล้ว, ดึง profile มาแสดง
-                const profile = await liff.getProfile();
-                displayNameP.innerText = profile.displayName;
-                userProfileDiv.classList.remove('hidden');
+      // Loop over them and prevent submission
+      Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+          event.preventDefault()
+          if (!form.checkValidity()) {
+            event.stopPropagation()
+            form.classList.add('was-validated')
+            $('#myForm').find(":invalid").first().focus();
+          } else {
+            submit()
+          }
 
-            } catch (error) {
-                console.error('LIFF Init Error:', error);
-                showMessage('เกิดข้อผิดพลาด', 'ไม่สามารถเริ่มต้น LIFF ได้: ' + error.message, true);
-            }
-        }
+        }, false)
+      })
+    })()
+  </script>
 
-        /**
-         * ฟังก์ชัน: ส่งข้อมูลไปที่ Google Sheets
-         */
-        async function sendDataToSheet(event) {
-            event.preventDefault(); // หยุดการ submit ฟอร์มแบบปกติ
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+    crossorigin="anonymous"></script>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
 
-            // 1. เปลี่ยนสถานะปุ่มเป็น Loading
-            setLoading(true);
 
-            try {
-                // 2. ดึงข้อมูล Profile จาก LIFF
-                const profile = await liff.getProfile();
-                
-                // 3. ดึงข้อมูลจากฟอร์ม (อีเมล)
-                const email = document.getElementById('email').value;
+  <br />
+  <div class="text-center p-4 col-12 mt-4" style="background-color: rgba(0, 0, 0, 0.05);">
+    © 2023 Copyright | พัฒนาโดยครูสิทธิชาติ สิทธิ
+  </div>
 
-                // 4. รวบรวมข้อมูลที่จะส่ง (ต้องตรงกับที่ Apps Script คาดหวัง)
-                const dataToSend = {
-                    userId: profile.userId,
-                    displayName: profile.displayName,
-                    email: email
-                };
-
-                // 5. ส่งข้อมูลด้วย Fetch API (POST Request)
-                const response = await fetch(GAS_WEB_APP_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    // body ต้องเป็น JSON string
-                    body: JSON.stringify(dataToSend)
-                });
-
-                // 6. รับผลลัพธ์กลับมาจาก GAS
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    // 7. ถ้าสำเร็จ, แจ้งผู้ใช้ และปิด LIFF
-                    showMessage('สำเร็จ!', 'บันทึกข้อมูลของคุณเรียบร้อยแล้ว');
-                    // รอ 2 วินาทีให้ผู้ใช้อ่านข้อความ แล้วค่อยปิด
-                    setTimeout(() => {
-                        liff.closeWindow();
-                    }, 2000);
-                } else {
-                    // 8. ถ้า GAS ส่ง error กลับมา
-                    throw new Error(result.message);
-                }
-
-            } catch (error) {
-                console.error('Error sending data:', error);
-                showMessage('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message, true);
-                setLoading(false); // คืนค่าปุ่มให้กดได้อีกครั้ง
-            }
-        }
-
-        /**
-         * ตั้งค่าสถานะ Loading ของปุ่ม
-         */
-        function setLoading(isLoading) {
-            if (isLoading) {
-                submitButton.disabled = true;
-                buttonText.classList.add('hidden');
-                buttonLoading.classList.remove('hidden');
-            } else {
-                submitButton.disabled = false;
-                buttonText.classList.remove('hidden');
-                buttonLoading.classList.add('hidden');
-            }
-        }
-
-        // --- เริ่มการทำงาน ---
-        // 1. เริ่มต้น LIFF เมื่อหน้าเว็บโหลด
-        document.addEventListener('DOMContentLoaded', initializeLiff);
-        
-        // 2. ผูก Event การ submit ฟอร์ม
-        form.addEventListener('submit', sendDataToSheet);
-
-        // 3. ผูก Event ปุ่มปิด Modal
-        closeModalButton.addEventListener('click', hideMessage);
-    </script>
 </body>
+
 </html>
